@@ -70,7 +70,7 @@ pub struct Context {
     raw: RawRenderingContext,
     extensions: Extensions,
     version: Version,
-    supported_extensions: HashSet<String>,
+    supported_extensions: Vec<String>,
     shaders: TrackedResource<WebShaderKey, WebGlShader>,
     programs: TrackedResource<WebProgramKey, WebGlProgram>,
     buffers: TrackedResource<WebBufferKey, WebGlBuffer>,
@@ -242,7 +242,7 @@ macro_rules! build_extensions {
             .unwrap()
             .iter()
             .map(|val| val.as_string().unwrap())
-            .collect::<HashSet<String>>();
+            .collect::<Vec<String>>();
 
         (extensions, supported_extensions)
     }};
@@ -1606,14 +1606,8 @@ impl HasContext for Context {
     type UniformLocation = WebGlUniformLocation;
     type TransformFeedback = WebTransformFeedbackKey;
 
-    #[cfg(feature = "std")]
-    fn supported_extensions(&self) -> &HashSet<String> {
+    fn supported_extensions(&self) -> &[String] {
         &self.supported_extensions
-    }
-
-    #[cfg(not(feature = "std"))]
-    fn supports_extension(&self, extension: &str) -> bool {
-        self.supported_extensions.contains(extension)
     }
 
     fn supports_debug(&self) -> bool {
