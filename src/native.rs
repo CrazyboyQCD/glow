@@ -40,7 +40,7 @@ impl Drop for DebugCallbackRawPtr {
 
 pub struct Context {
     raw: native_gl::GlFns,
-    extensions: HashSet<String>,
+    extensions: Vec<String>,
     constants: Constants,
     version: Version,
     debug_callback: Option<DebugCallbackRawPtr>,
@@ -72,7 +72,7 @@ impl Context {
         // Setup extensions and constants after the context has been built
         let mut context = Self {
             raw,
-            extensions: HashSet::new(),
+            extensions: Vec::new(),
             constants: Constants::default(),
             version,
             debug_callback: None,
@@ -85,7 +85,7 @@ impl Context {
             let num_extensions = context.get_parameter_i32(NUM_EXTENSIONS);
             for i in 0..num_extensions {
                 let extension_name = context.get_parameter_indexed_string(EXTENSIONS, i as u32);
-                context.extensions.insert(extension_name);
+                context.extensions.push(extension_name);
             }
         } else {
             // Fallback
@@ -205,18 +205,12 @@ impl HasContext for Context {
     type UniformLocation = NativeUniformLocation;
     type TransformFeedback = NativeTransformFeedback;
 
-    #[cfg(feature = "std")]
-    fn supported_extensions(&self) -> &HashSet<String> {
+    fn supported_extensions(&self) -> &[String] {
         &self.extensions
     }
 
-    #[cfg(not(feature = "std"))]
-    fn supports_extension(&self, extension: &str) -> bool {
-        self.extensions.contains(extension)
-    }
-
     fn supports_debug(&self) -> bool {
-        if self.extensions.contains("GL_KHR_debug") {
+        if self.extensions.iter().any(|name| name == "GL_KHR_debug") {
             // Supports extension (either GL or GL ES)
             true
         } else if self.version.is_embedded {

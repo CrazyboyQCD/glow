@@ -13,16 +13,8 @@
 #[macro_use]
 extern crate alloc;
 
-#[cfg(all(not(feature = "std"), not(feature = "hashbrown")))]
-compile_error!("\"hashbrown\" feature should be enabled in \"no_std\" environment.");
-
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{fmt::Debug, hash::Hash};
-
-#[cfg(feature = "hashbrown")]
-use hashbrown::HashSet;
-#[cfg(all(feature = "std", not(feature = "hashbrown")))]
-use std::collections::HashSet;
 
 mod version;
 pub use version::Version;
@@ -168,11 +160,7 @@ pub trait HasContext: __private::Sealed {
     type TransformFeedback: Copy + Clone + Debug + Eq + Hash + Ord + PartialEq + PartialOrd;
     type UniformLocation: Clone + Debug;
 
-    #[cfg(feature = "std")]
-    fn supported_extensions(&self) -> &HashSet<String>;
-
-    #[cfg(not(feature = "std"))]
-    fn supports_extension(&self, extension: &str) -> bool;
+    fn supported_extensions(&self) -> &[String];
 
     fn supports_debug(&self) -> bool;
 
